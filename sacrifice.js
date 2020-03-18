@@ -432,6 +432,7 @@ function isValidJsonStr(str) {
 ///
 /// Expose to world
 ///
+
 let sacrifice            = {};
 
 sacrifice.trimJson       = trimJson;

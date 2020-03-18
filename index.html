@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Required meta tags -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="Author" content="Toni Helminen kalleankka1@gmail.com" />
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+  <title>Try sacrifice.js</title>
+
+  <script src="sacrifice.js"></script>
+  <script src="unittests.js"></script>
+</head>
+<body>
+  <div class="container">
+
+    <h2>Try sacrifice</h2>
+
+    <form action="#">
+      <div class="form-group">
+        <textarea style="font-size:25px;" rows="5" cols="50" name="equation" id="idJsonText"></textarea>
+      </div>
+      <input type="submit" value="Validate" onclick="return validateCallback()" />
+      <input type="submit" value="Trim" onclick="return trimCallback()" />
+    </form>
+
+    <div class="p-2"><b class="h2" id="answer"></b></div>
+
+    <!-- Copyright -->
+    <div class="footer-copyright text-center py-3">© 2020 Copyright:
+      <a href="https://github.com/SamuraiDangyo/">SamuraiDangyo</a>
+    </div>
+  </div>
+
+  <script>
+  let validateCallback = 0;
+  let trimCallback     = 0;
+
+  (function(){
+  function validJSON() {
+    $("#answer").removeClass("text-danger").addClass("text-success").html("Valid JSON");
+  }
+
+  function invalidJSON() {
+    $("#answer").removeClass("text-success").addClass("text-danger").html("Invalid JSON");
+  }
+
+  validateCallback = function() {
+    if (sacrifice.isValidJsonStr($("#idJsonText").val()))
+      validJSON();
+    else
+      invalidJSON();
+
+    return false;
+  };
+
+  trimCallback = function() {
+    let value = $("#idJsonText").val();
+
+    if ( ! sacrifice.isValidJsonStr(value)) {
+      invalidJSON();
+      return false;
+    }
+
+    validJSON();
+    stuff = value;
+
+    $("#idJsonText").val(sacrifice.serialize(value));
+
+    return false;
+  };
+
+  sacrifice.unittests();
+  })();
+  </script>
+</body>
+</html>

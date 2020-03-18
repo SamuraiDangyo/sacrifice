@@ -12,7 +12,7 @@
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
 
-  <title>Try sacrifice.js</title>
+  <title>Try sacrifice</title>
 
   <script src="sacrifice.js"></script>
   <script src="unittests.js"></script>
@@ -71,7 +71,7 @@
     validJSON();
     stuff = value;
 
-    $("#idJsonText").val(sacrifice.serialize(value));
+    $("#idJsonText").val(sacrifice.trimJson(value));
 
     return false;
   };

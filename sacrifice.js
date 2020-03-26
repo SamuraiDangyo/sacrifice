@@ -171,30 +171,36 @@ class Tokenizer extends MyError {
     return false;
   }
 
-  justParse() {
-    if (typeof this.str !== "string")
-      return this.error("Illegal input");
-
-    while (this.counter < this.str.length) {
-      if (this.tokenWhitespace() || this.tokenOne() || this.tokenString() || this.tokenNumber() || this.tokenNull() || this.tokenTrue() || this.tokenFalse())
-        continue;
-
-      return this.error(`Illegal character: '${this.str[this.counter]}'`);
-    }
-
-    return this;
-  }
-
   trimJson() {
     let str = "";
-    for (let i = 0; i < this.tokens.length; i++)
-      str += this.tokens[i].tokenId == TOKEN_ID_STRING ? `"${this.tokens[i].tokenValue}"` : this.tokens[i].tokenValue;
+    //console.log(this.str,this.tokens);sdsd
+    for (let i = 0; i < this.tokens.length; i++) {
+      switch (this.tokens[i].tokenId) {
+        case TOKEN_ID_STRING : str += `"${this.tokens[i].tokenValue}"`; break;
+        case TOKEN_ID_NULL   : str += "null"; break;
+        default              : str += this.tokens[i].tokenValue; break;
+      }
+    }
     return str;
   }
 
   debugTokens() {
     for (let i = 0; i < this.tokens.length; i++)
       console.log(i, this.tokens[i]);
+  }
+
+  justParse() {
+    if (typeof this.str !== "string")
+      return this.error("Illegal input");
+
+    while (this.counter < this.str.length) {
+      if (this.tokenWhitespace() || this.tokenNull() || this.tokenTrue() || this.tokenFalse() || this.tokenOne() || this.tokenString() || this.tokenNumber())
+        continue;
+
+      return this.error(`Illegal character: '${this.str[this.counter]}'`);
+    }
+
+    return this;
   }
 }
 

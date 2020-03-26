@@ -21,6 +21,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 (function(){
 'use strict';
 
+const TRIM_GOOD_JSON_STR = [
+  '[null," ",42]',
+  'null',
+  '{"key":true}',
+  '{"key":null}',
+  '{"key":42}',
+  '{"key":42.0}'
+];
+
 const GOOD_JSON_STR = [
   '42e+30',
   'true',
@@ -59,6 +68,7 @@ const BAD_JSON_STR = [
 ];
 
 const JSON_TO_STRING = [
+  [[null," ",42],             '[null," ",42]'],
   [[3],                       '[3]'],
   [[3,"42",42,["42"]],        '[3,"42",42,["42"]]'],
   [[3,null,42],               '[3,null,42]'],
@@ -102,7 +112,14 @@ function isValidJsonBadUnittest() {
       console.log("ERROR: ", sacrifice.isValidJsonStr(test), test);
 }
 
+function trimJsonUnittest() {
+  for (const test of TRIM_GOOD_JSON_STR)
+    if (sacrifice.trimJson(test) != test)
+      console.log("ERROR: ", sacrifice.trimJson(test), test);
+}
+
 sacrifice.unittests = function() {
+
   tokenizerUnittest();
   parserUnittest();
   jsonifierUnittest();
@@ -110,6 +127,8 @@ sacrifice.unittests = function() {
   json2StrUnittest();
   isValidJsonGoodUnittest();
   isValidJsonBadUnittest();
+  trimJsonUnittest();
+
 };
 
 })();

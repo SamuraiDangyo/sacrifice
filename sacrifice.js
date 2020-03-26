@@ -26,7 +26,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 ///
 
 const NAME                    = "sacrifice";
-const VERSION                 = "1.0";
+const VERSION                 = "1.01";
 const AUTHOR                  = "Toni Helminen";
 
 const TOKEN_ID_LEFT_BRACE     = 0;  // {
@@ -60,13 +60,20 @@ const NUMBER_RE               = /[-+]?\d*\.?\d+([eE][-+]?\d+)|[+-]?\d*\.?\d+/; /
 
 class MyError {
   constructor() {
-    this.errors   = false;
-    this.errorMsg = 0;
+    this.errors        = false;
+    this.errorMsg      = 0;
+
+    sacrifice.errorMsg = 0;
+    sacrifice.errors   = false;
   }
 
   error(msg = "Errors") {
     this.errors   = true;
     this.errorMsg = msg;
+
+    // Set global errorMSg
+    sacrifice.errors   = true;
+    sacrifice.errorMsg = msg;
 
     return this;
   }
@@ -164,7 +171,7 @@ class Tokenizer extends MyError {
     return false;
   }
 
-  tokenize() {
+  justParse() {
     if (typeof this.str !== "string")
       return this.error("Illegal input");
 
@@ -174,12 +181,14 @@ class Tokenizer extends MyError {
 
       return this.error(`Illegal character: '${this.str[this.counter]}'`);
     }
+
+    return this;
   }
 
   trimJson() {
     let str = "";
     for (let i = 0; i < this.tokens.length; i++)
-      str += this.tokens[i].tokenValue;
+      str += this.tokens[i].tokenId == TOKEN_ID_STRING ? `"${this.tokens[i].tokenValue}"` : this.tokens[i].tokenValue;
     return str;
   }
 
@@ -202,7 +211,8 @@ class Parser extends MyError {
     this.result    = 0;
     this.tokenizer = new Tokenizer(str);
 
-    this.tokenizer.tokenize();
+    this.tokenizer.justParse();
+    this.tokens    = this.tokenizer.tokens;
   }
 
   peek(tokenId, index = 0) {
@@ -319,7 +329,6 @@ class Parser extends MyError {
     }
 
     if (this.peek(TOKEN_ID_LEFT_BRACKET)) {
-     // myPrinter(444, this.errors);
       const array = this.createArray();
       return this.errors ? this : array;
     }
@@ -336,7 +345,6 @@ class Parser extends MyError {
   justParse(str) {
     if (this.tokenizer.errors) return this.tokenizer;
 
-    this.tokens = this.tokenizer.tokens;
     this.result = this.parseTokens();
 
     if (this.position < this.tokens.length)
@@ -353,7 +361,9 @@ class Parser extends MyError {
 class Jsonifier extends MyError {
   constructor(json) {
     super();
-    this.json = json;
+
+    this.json  = json;
+    this.result = 0;
   }
 
   createObject(obj) {
@@ -362,8 +372,8 @@ class Jsonifier extends MyError {
     const keys   = Object.keys(obj);
 
     for (const key of keys) {
-      str += (moreKeys ? "," : "") + `"${key}": ` + this.convert(obj[key]);
-      moreKeys = true;
+      str      += (moreKeys ? "," : "") + `"${key}": ` + this.convert(obj[key]);
+      moreKeys  = true;
     }
 
     return str + "}";
@@ -385,9 +395,14 @@ class Jsonifier extends MyError {
     if (Array.isArray(val))
       return this.createArray(val);
 
-    //myPrinter(val);
     if (val === null)
       return null;
+
+    if (val === false)
+      return false;
+
+    if (val === true)
+      return true;
 
     if (typeof val == "number")
       return val;
@@ -398,7 +413,15 @@ class Jsonifier extends MyError {
     if (typeof val == "boolean")
       return val ? true : false;
 
-    return `"${val}"`;
+    if (typeof val == "string")
+      return `"${val}"`;
+
+    return this.error("Illegal JSON object");
+  }
+
+  justParse() {
+    this.result = this.convert(this.json);
+    return this;
   }
 }
 
@@ -408,32 +431,30 @@ class Jsonifier extends MyError {
 
 function trimJson(str) {
   let tokenizer = new Tokenizer(str);
-  tokenizer.tokenize();
-  if (tokenizer.errors) return tokenizer;
+  if (tokenizer.justParse().errors) return undefined;
   return tokenizer.trimJson();
 }
 
 function str2Json(str) {
   let parser = new Parser(str);
-  return parser.justParse();
+  return parser.justParse().errors ? undefined : parser.result;
 }
 
 function json2Str(json) {
-  let jsonifier = new Jsonifier();
-  return jsonifier.convert(json);
+  let jsonifier = new Jsonifier(json);
+  return jsonifier.justParse().errors ? undefined : jsonifier.result;
 }
 
 function isValidJsonStr(str) {
   let parser = new Parser(str);
-  let res = parser.justParse();
-  return ! res.errors;
+  return ! parser.justParse().errors;
 }
 
 ///
 /// Expose to world
 ///
 
-let sacrifice            = {};
+let sacrifice            = {errorMsg: 0};
 
 sacrifice.trimJson       = trimJson;
 sacrifice.str2Json       = str2Json;
@@ -442,6 +463,7 @@ sacrifice.isValidJsonStr = isValidJsonStr;
 
 sacrifice.Tokenizer      = Tokenizer;
 sacrifice.Parser         = Parser;
+sacrifice.Jsonifier      = Jsonifier;
 
 sacrifice.version        = function() {return `${NAME} ${VERSION} by ${AUTHOR}`;};
 

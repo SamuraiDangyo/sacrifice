@@ -21,7 +21,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 (function(){
 'use strict';
 
-const GOOD = [
+const GOOD_JSON_STR = [
   '42e+30',
   'true',
   'null',
@@ -46,7 +46,7 @@ const GOOD = [
   '{"key_a" : {"key_a" : "value_a"}, "keyb" : "value_b"}'
 ];
 
-const BAD = [
+const BAD_JSON_STR = [
   '[ 3 ] s',
   '[4,3,3,,]',
   '[4,3,3,]',
@@ -58,43 +58,58 @@ const BAD = [
   '4 5',
 ];
 
-const EVEN_BETTER = [
+const JSON_TO_STRING = [
   [[3],                       '[3]'],
+  [[3,"42",42,["42"]],        '[3,"42",42,["42"]]'],
   [[3,null,42],               '[3,null,42]'],
   [[{"key": 42},null,42],     '[{"key": 42},null,42]'],
   [[333,3,null,[333,3,null]], '[333,3,null,[333,3,null]]']
 ];
 
+function tokenizerUnittest() {
+  let tokenizer = new sacrifice.Tokenizer("null");
+  if (tokenizer.justParse().errors)
+    console.log("ERROR: ", tokenizer.errorMsg);
+}
+
+function parserUnittest() {
+  let parser = new sacrifice.Parser("null");
+  if (parser.justParse().errors)
+    console.log("ERROR: ", parser.errorMsg);
+}
+
+function jsonifierUnittest() {
+  let jsonifier = new sacrifice.Jsonifier([42, function(){}]);
+  if ( ! jsonifier.justParse().errors)
+    console.log("ERROR: ", jsonifier, jsonifier.errorMsg);
+}
+
+function json2StrUnittest() {
+  for (const test of JSON_TO_STRING)
+    if (sacrifice.json2Str(test[0]) != test[1])
+      console.log("ERROR: ", sacrifice.json2Str(test), test[1]);
+}
+
+function isValidJsonGoodUnittest() {
+  for (const test of GOOD_JSON_STR)
+    if ( ! sacrifice.isValidJsonStr(test))
+      console.log("ERROR: ", sacrifice.isValidJsonStr(test), test);
+}
+
+function isValidJsonBadUnittest() {
+  for (const test of BAD_JSON_STR)
+    if (sacrifice.isValidJsonStr(test))
+      console.log("ERROR: ", sacrifice.isValidJsonStr(test), test);
+}
+
 sacrifice.unittests = function() {
-  //console.log(sacrifice.isValidJsonStr("[4,3,3,[5],[7]]")); return;
-  //console.log(  sacrifice.json2Str(sacrifice.str2Json("42e+30").result)  );
-  //console.log(  sacrifice.json2Str([3])  );
+  tokenizerUnittest();
+  parserUnittest();
+  jsonifierUnittest();
 
-  for (const test of GOOD)
-    if (sacrifice.trimJson(test) !== sacrifice.trimJson(sacrifice.json2Str(sacrifice.str2Json(test).result))) {
-      console.log("ERRORS: Unit tests:", test);
-      return false;
-    }
-
-  for (const test of GOOD)
-    if ( ! sacrifice.isValidJsonStr(test)) {
-      console.log("ERRORS: Unit tests:", test);
-      return false;
-    }
-
-  for (const test of BAD)
-    if (sacrifice.isValidJsonStr(test)) {
-      console.log("ERRORS: Unit tests:", test);
-      return false;
-    }
-
-  for (const test of EVEN_BETTER)
-    if (sacrifice.json2Str(test[0]) != test[1]) {
-      console.log("ERRORS: Unit tests:", test[1]);
-      return false;
-    }
-
-  return true;
+  json2StrUnittest();
+  isValidJsonGoodUnittest();
+  isValidJsonBadUnittest();
 };
 
 })();

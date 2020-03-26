@@ -218,6 +218,9 @@ class Parser extends MyError {
     this.tokenizer = new Tokenizer(str);
 
     this.tokenizer.justParse();
+
+    this.errors    = this.tokenizer.errors;
+    this.errorMSg  = this.tokenizer.errorMSg;
     this.tokens    = this.tokenizer.tokens;
   }
 

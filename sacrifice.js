@@ -21,12 +21,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 (function(){
 'use strict';
 
-///
-/// Consts
-///
+//
+// Consts
+//
 
 const NAME                    = "sacrifice";
-const VERSION                 = "1.01";
+const VERSION                 = "1.02";
 const AUTHOR                  = "Toni Helminen";
 
 const TOKEN_ID_LEFT_BRACE     = 0;  // {
@@ -54,39 +54,30 @@ const TOKEN_TUPLES            = [
 
 const NUMBER_RE               = /[-+]?\d*\.?\d+([eE][-+]?\d+)|[+-]?\d*\.?\d+/; // [1.22, 2.2+e5, -2.20+E5, ...]
 
-///
-/// Error handling
-///
+//
+// Error handling
+//
 
 class MyError {
   constructor() {
-    this.errors        = false;
-    this.errorMsg      = 0;
-
-    sacrifice.errorMsg = 0;
     sacrifice.errors   = false;
+    sacrifice.errorMsg = 0;
   }
 
   error(msg = "Errors") {
-    this.errors   = true;
-    this.errorMsg = msg;
-
-    // Set global errorMSg
     sacrifice.errors   = true;
     sacrifice.errorMsg = msg;
-
     return this;
   }
 }
 
-///
-/// Tokenizer
-///
+//
+// Tokenizer
+//
 
 class Tokenizer extends MyError {
   constructor(str) {
     super();
-
     this.tokens  = [];
     this.counter = 0;
     this.str     = str;
@@ -171,9 +162,8 @@ class Tokenizer extends MyError {
     return false;
   }
 
-  trimJson() {
+  trim() {
     let str = "";
-    //console.log(this.str,this.tokens);sdsd
     for (let i = 0; i < this.tokens.length; i++) {
       switch (this.tokens[i].tokenId) {
         case TOKEN_ID_STRING : str += `"${this.tokens[i].tokenValue}"`; break;
@@ -189,38 +179,30 @@ class Tokenizer extends MyError {
       console.log(i, this.tokens[i]);
   }
 
-  justParse() {
-    if (typeof this.str !== "string")
-      return this.error("Illegal input");
+  parse() {
+    if (typeof this.str !== "string") this.error("Illegal input");
 
-    while (this.counter < this.str.length) {
-      if (this.tokenWhitespace() || this.tokenNull() || this.tokenTrue() || this.tokenFalse() || this.tokenOne() || this.tokenString() || this.tokenNumber())
-        continue;
-
-      return this.error(`Illegal character: '${this.str[this.counter]}'`);
+    while (this.counter < this.str.length && ! sacrifice.errors) {
+      if (this.tokenWhitespace() || this.tokenNull() || this.tokenTrue() || this.tokenFalse() || this.tokenOne() || this.tokenString() || this.tokenNumber()) continue;
+      this.error(`Illegal character: '${this.str[this.counter]}'`);
     }
 
-    return this;
+    return ! sacrifice.errors;
   }
 }
 
-///
-/// Parser
-///
+//
+// Parser
+//
 
 class Parser extends MyError {
   constructor(str) {
     super();
 
     this.position  = 0;
-    this.tokens    = [];
     this.result    = 0;
     this.tokenizer = new Tokenizer(str);
-
-    this.tokenizer.justParse();
-
-    this.errors    = this.tokenizer.errors;
-    this.errorMSg  = this.tokenizer.errorMSg;
+    this.tokenizer.parse();
     this.tokens    = this.tokenizer.tokens;
   }
 
@@ -246,7 +228,7 @@ class Parser extends MyError {
   }
 
   createObject() {
-    if (this.errors) return this;
+    if (sacrifice.errors) return this;
 
     let obj       = {};
     let commaOpen = false;
@@ -255,11 +237,11 @@ class Parser extends MyError {
     this.step();
 
     while (this.good()) {
-      if (this.errors)
-        return this;
+      if (sacrifice.errors) return this;
 
       if (this.peek(TOKEN_ID_RIGHT_BRACE)) {
-        if (commaOpen) return this.error(`Illegal token`);
+        if (commaOpen)
+          return this.error(`Illegal token`);
         this.step();
         return obj;
       }
@@ -273,9 +255,20 @@ class Parser extends MyError {
 
       commaOpen = false;
 
-      if (this.peek(TOKEN_ID_FALSE) || this.peek(TOKEN_ID_TRUE) || this.peek(TOKEN_ID_NULL) || this.peek(TOKEN_ID_STRING) || this.peek(TOKEN_ID_NUMBER)) {
-        const value = this.current().tokenValue;
-        obj[key]    = value;
+      if (this.peek(TOKEN_ID_TRUE)) {
+        obj[key] = true;
+        this.step();
+      } else if (this.peek(TOKEN_ID_FALSE)) {
+        obj[key] = false;
+        this.step();
+      } else if (this.peek(TOKEN_ID_NULL)) {
+        obj[key] = null;
+        this.step();
+      } else if (this.peek(TOKEN_ID_STRING)) {
+        obj[key] = this.current().tokenValue;
+        this.step();
+      } else if (this.peek(TOKEN_ID_NUMBER)) {
+        obj[key] = parseFloat(this.current().tokenValue);
         this.step();
       } else {
         obj[key] = this.parseTokens();
@@ -291,7 +284,7 @@ class Parser extends MyError {
   }
 
   createArray() {
-    if (this.errors) return this;
+    if (sacrifice.errors) return this;
 
     let array     = [];
     let commaOpen = false;
@@ -308,9 +301,20 @@ class Parser extends MyError {
 
       commaOpen = false;
 
-      if (this.peek(TOKEN_ID_FALSE) || this.peek(TOKEN_ID_TRUE) || this.peek(TOKEN_ID_NULL) || this.peek(TOKEN_ID_STRING) || this.peek(TOKEN_ID_NUMBER)) {
-        const value = this.current().tokenValue;
-        array.push(value);
+      if (this.peek(TOKEN_ID_NULL)) {
+        array.push(null);
+        this.step();
+      } else if (this.peek(TOKEN_ID_FALSE)) {
+        array.push(false);
+        this.step();
+      }  else if (this.peek(TOKEN_ID_TRUE)) {
+        array.push(true);
+        this.step();
+      } else if (this.peek(TOKEN_ID_STRING)) {
+        array.push(this.current().tokenValue);
+        this.step();
+      } else if (this.peek(TOKEN_ID_NUMBER)) {
+        array.push(parseFloat(this.current().tokenValue));
         this.step();
       } else if (this.peek(TOKEN_ID_LEFT_BRACE)) {
         array.push(this.createObject());
@@ -330,48 +334,37 @@ class Parser extends MyError {
   }
 
   parseTokens() {
-    if (this.errors) return this;
+    if (sacrifice.errors) return this;
 
-    if (this.peek(TOKEN_ID_LEFT_BRACE)) {
-      const obj = this.createObject();
-      return this.errors ? this : obj;
-    }
+    if (this.peek(TOKEN_ID_LEFT_BRACE))   {const obj   = this.createObject(); return sacrifice.errors ? this : obj;}
+    if (this.peek(TOKEN_ID_LEFT_BRACKET)) {const array = this.createArray();  return sacrifice.errors ? this : array;}
 
-    if (this.peek(TOKEN_ID_LEFT_BRACKET)) {
-      const array = this.createArray();
-      return this.errors ? this : array;
-    }
+    if (this.peek(TOKEN_ID_TRUE))  {this.step(); return true;}
+    if (this.peek(TOKEN_ID_FALSE)) {this.step(); return false;}
+    if (this.peek(TOKEN_ID_NULL))  {this.step(); return null;}
 
-    if (this.peek(TOKEN_ID_FALSE) || this.peek(TOKEN_ID_TRUE) || this.peek(TOKEN_ID_NULL) || this.peek(TOKEN_ID_NUMBER)) {
-      const res = this.current().tokenValue;
-      this.step();
-      return res;
-    }
+    if (this.peek(TOKEN_ID_STRING)) {const res = this.current().tokenValue;             this.step(); return res;}
+    if (this.peek(TOKEN_ID_NUMBER)) {const res = parseFloat(this.current().tokenValue); this.step(); return res;}
 
     return this.error("Illegal JSON");
   }
 
-  justParse(str) {
-    if (this.tokenizer.errors) return this.tokenizer;
-
+  parse(str) {
+    if (sacrifice.errors) return false;
     this.result = this.parseTokens();
-
-    if (this.position < this.tokens.length)
-      return this.error("Illegal JSON");
-
-    return this;
+    if (this.position < this.tokens.length) this.error("Illegal JSON");
+    return ! sacrifice.errors;
   }
 }
 
-///
-/// JSON to String
-///
+//
+// JSON to String
+//
 
-class Jsonifier extends MyError {
+class Stringifier extends MyError {
   constructor(json) {
     super();
-
-    this.json  = json;
+    this.json   = json;
     this.result = 0;
   }
 
@@ -381,7 +374,7 @@ class Jsonifier extends MyError {
     const keys   = Object.keys(obj);
 
     for (const key of keys) {
-      str      += (moreKeys ? "," : "") + `"${key}": ` + this.convert(obj[key]);
+      str      += (moreKeys ? "," : "") + `"${key}":` + this.convert(obj[key]);
       moreKeys  = true;
     }
 
@@ -401,81 +394,63 @@ class Jsonifier extends MyError {
   }
 
   convert(val) {
-    if (Array.isArray(val))
-      return this.createArray(val);
-
-    if (val === null)
-      return null;
-
-    if (val === false)
-      return false;
-
-    if (val === true)
-      return true;
-
-    if (typeof val == "number")
-      return val;
-
-    if (typeof val == "object")
-      return this.createObject(val);
-
-    if (typeof val == "boolean")
-      return val ? true : false;
-
-    if (typeof val == "string")
-      return `"${val}"`;
+    if (val === null)           return "null";
+    if (val === false)          return "false";
+    if (val === true)           return "true";
+    if (Array.isArray(val))     return this.createArray(val);
+    if (typeof val == "number") return val;
+    if (typeof val == "object") return this.createObject(val);
+    if (typeof val == "string") return `"${val}"`;
 
     return this.error("Illegal JSON object");
   }
 
-  justParse() {
+  parse() {
     this.result = this.convert(this.json);
-    return this;
+    return ! sacrifice.errors;
   }
 }
 
-///
-/// Helper functions
-///
+//
+// Helper functions
+//
 
-function trimJson(str) {
-  let tokenizer = new Tokenizer(str);
-  if (tokenizer.justParse().errors) return undefined;
-  return tokenizer.trimJson();
+function trim(str) {
+  const tokenizer = new Tokenizer(str);
+  return tokenizer.parse() ? tokenizer.trim() : undefined;
 }
 
-function str2Json(str) {
-  let parser = new Parser(str);
-  return parser.justParse().errors ? undefined : parser.result;
+function parse(str) {
+  if (Array.isArray(str)) return parse(str[0]);
+  if (typeof str != "string") return str;
+
+  const parser = new Parser(str);
+  return parser.parse() ? parser.result : undefined;
 }
 
-function json2Str(json) {
-  let jsonifier = new Jsonifier(json);
-  return jsonifier.justParse().errors ? undefined : jsonifier.result;
+function stringify(json) {
+  const stringifier = new Stringifier(json);
+  return stringifier.parse() ? stringifier.result : undefined;
 }
 
-function isValidJsonStr(str) {
-  let parser = new Parser(str);
-  return ! parser.justParse().errors;
+function validate(str) {
+  const parser = new Parser(str);
+  return parser.parse();
 }
 
-///
-/// Expose to world
-///
+//
+// Expose objects to the world
+//
 
-let sacrifice            = {errorMsg: 0};
+const sacrifice     = {errors: false, errorMsg: 0};
 
-sacrifice.trimJson       = trimJson;
-sacrifice.str2Json       = str2Json;
-sacrifice.json2Str       = json2Str;
-sacrifice.isValidJsonStr = isValidJsonStr;
+sacrifice.stringify = stringify;
+sacrifice.trim      = trim;
+sacrifice.parse     = parse;
+sacrifice.validate  = validate;
+sacrifice.version   = function() {return `${NAME} ${VERSION} by ${AUTHOR}`;};
+sacrifice.Parser    = Parser; // contains .tokenizer
 
-sacrifice.Tokenizer      = Tokenizer;
-sacrifice.Parser         = Parser;
-sacrifice.Jsonifier      = Jsonifier;
-
-sacrifice.version        = function() {return `${NAME} ${VERSION} by ${AUTHOR}`;};
-
-window.sacrifice         = sacrifice;
+window.sacrifice    = sacrifice;
 
 })();

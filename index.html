@@ -43,35 +43,27 @@
   let trimCallback     = 0;
 
   (function(){
-  function validJSON() {
-    $("#answer").removeClass("text-danger").addClass("text-success").html("Valid JSON");
-  }
-
-  function invalidJSON() {
-    $("#answer").removeClass("text-success").addClass("text-danger").html("Invalid JSON");
-  }
+  function validJSON()   {$("#answer").removeClass("text-danger").addClass("text-success").html("Valid JSON");}
+  function invalidJSON() {$("#answer").removeClass("text-success").addClass("text-danger").html("Invalid JSON");}
 
   validateCallback = function() {
-    if (sacrifice.isValidJsonStr($("#idJsonText").val()))
+    if (sacrifice.validate($("#idJsonText").val()))
       validJSON();
     else
       invalidJSON();
-
     return false;
   };
 
   trimCallback = function() {
-    let value = $("#idJsonText").val();
+    const value = $("#idJsonText").val();
 
-    if ( ! sacrifice.isValidJsonStr(value)) {
+    if ( ! sacrifice.validate(value)) {
       invalidJSON();
       return false;
     }
 
     validJSON();
-    stuff = value;
-
-    $("#idJsonText").val(sacrifice.trimJson(value));
+    $("#idJsonText").val(sacrifice.trim(value));
 
     return false;
   };

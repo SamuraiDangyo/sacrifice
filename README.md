@@ -1,9 +1,9 @@
-## Overview
+# Overview
 sacrifice is a simple and lightweight JSON library written in JavaScript
 
 ![sacrifice](https://github.com/SamuraiDangyo/sacrifice/blob/master/logo.jpg)
 
-### Examples
+## Examples
 Validate JSON string :
 ```
 sacrifice.validate("[42]");     // true

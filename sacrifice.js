@@ -64,7 +64,7 @@ class MyError {
     sacrifice.errorMsg = 0;
   }
 
-  error(msg = "Errors") {
+  error(msg = "...") {
     sacrifice.errors   = true;
     sacrifice.errorMsg = msg;
     return this;

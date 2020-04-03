@@ -21,7 +21,7 @@ function unittest1() {
     [3,null,42],
     [[{"key": 42},null,42]],
     [[333,3,null,[333,3,null]]],
-  ].forEach(function(test){if (sacrifice.stringify(test) != JSON.stringify(test)) console.log("ERROR: ", sacrifice.stringify(test), JSON.stringify(test));});
+  ].forEach(function(test){if (sacrifice.stringify(test) != JSON.stringify(test)) console.error(sacrifice.stringify(test), JSON.stringify(test));});
 }
 
 function unittest2() {

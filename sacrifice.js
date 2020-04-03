@@ -21,13 +21,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 (function(){
 'use strict';
 
-//
 // Consts
-//
 
-const NAME                    = "sacrifice";
-const VERSION                 = "1.02";
-const AUTHOR                  = "Toni Helminen";
+const NAME                    = "sacrifice 1.03";
 
 const TOKEN_ID_LEFT_BRACE     = 0;  // {
 const TOKEN_ID_RIGHT_BRACE    = 1;  // }
@@ -54,9 +50,7 @@ const TOKEN_TUPLES            = [
 
 const NUMBER_RE               = /[-+]?\d*\.?\d+([eE][-+]?\d+)|[+-]?\d*\.?\d+/; // [1.22, 2.2+e5, -2.20+E5, ...]
 
-//
 // Error handling
-//
 
 class MyError {
   constructor() {
@@ -71,9 +65,7 @@ class MyError {
   }
 }
 
-//
 // Tokenizer
-//
 
 class Tokenizer extends MyError {
   constructor(str) {
@@ -164,13 +156,8 @@ class Tokenizer extends MyError {
 
   trim() {
     let str = "";
-    for (let i = 0; i < this.tokens.length; i++) {
-      switch (this.tokens[i].tokenId) {
-        case TOKEN_ID_STRING : str += `"${this.tokens[i].tokenValue}"`; break;
-        case TOKEN_ID_NULL   : str += "null"; break;
-        default              : str += this.tokens[i].tokenValue; break;
-      }
-    }
+    for (let i = 0; i < this.tokens.length; i++)
+      str += this.tokens[i].tokenId == TOKEN_ID_STRING ? `"${this.tokens[i].tokenValue}"` : this.tokens[i].tokenValue;
     return str;
   }
 
@@ -191,9 +178,7 @@ class Tokenizer extends MyError {
   }
 }
 
-//
 // Parser
-//
 
 class Parser extends MyError {
   constructor(str) {
@@ -357,9 +342,7 @@ class Parser extends MyError {
   }
 }
 
-//
 // JSON to String
-//
 
 class Stringifier extends MyError {
   constructor(json) {
@@ -411,9 +394,7 @@ class Stringifier extends MyError {
   }
 }
 
-//
 // Helper functions
-//
 
 function trim(str) {
   const tokenizer = new Tokenizer(str);
@@ -438,9 +419,7 @@ function validate(str) {
   return parser.parse();
 }
 
-//
 // Expose objects to the world
-//
 
 const sacrifice     = {errors: false, errorMsg: 0};
 
@@ -448,7 +427,7 @@ sacrifice.stringify = stringify;
 sacrifice.trim      = trim;
 sacrifice.parse     = parse;
 sacrifice.validate  = validate;
-sacrifice.version   = function() {return `${NAME} ${VERSION} by ${AUTHOR}`;};
+sacrifice.version   = function() {return `${NAME} by Toni Helminen`;};
 sacrifice.Parser    = Parser; // contains .tokenizer
 
 window.sacrifice    = sacrifice;

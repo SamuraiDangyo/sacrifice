@@ -21,10 +21,7 @@ function unittest1() {
     [3,null,42],
     [[{"key": 42},null,42]],
     [[333,3,null,[333,3,null]]],
-  ].forEach(function(test){
-    if (sacrifice.stringify(test) != JSON.stringify(test))
-      console.log("ERROR: ", sacrifice.stringify(test), JSON.stringify(test));
-  });
+  ].forEach(function(test){if (sacrifice.stringify(test) != JSON.stringify(test)) console.log("ERROR: ", sacrifice.stringify(test), JSON.stringify(test));});
 }
 
 function unittest2() {
@@ -54,10 +51,7 @@ function unittest2() {
     '["value_1", "value_2"]',
     '{"key_a" : "value_a", "keyb" : "value_b", "arrays" : ["one", "2", "42"]}',
     '{"key_a" : {"key_a" : "value_a"}, "keyb" : "value_b"}'
-  ].forEach(function(test){
-    if (sacrifice.trim(test) != JSON.stringify(JSON.parse(test)))
-      console.log("ERROR: ", test, sacrifice.trim(test), JSON.stringify(JSON.parse(test)));
-  });
+  ].forEach(function(test){if (sacrifice.trim(test) != JSON.stringify(JSON.parse(test))) console.error(test, sacrifice.trim(test), JSON.stringify(JSON.parse(test)));});
 }
 
 function unittest3() {
@@ -72,10 +66,7 @@ function unittest3() {
     '[true,[true],[true]]',
     '[42,[42],[42]]',
     '{"key": 42}'
-  ].forEach(function(test){
-    if (sacrifice.stringify(sacrifice.parse(test)) != JSON.stringify(JSON.parse(test)))
-      console.log("ERROR: ", test, sacrifice.stringify(sacrifice.parse(test)), JSON.stringify(JSON.parse(test)));
-  });
+  ].forEach(function(test){if (sacrifice.stringify(sacrifice.parse(test)) != JSON.stringify(JSON.parse(test))) console.error(test, sacrifice.stringify(sacrifice.parse(test)), JSON.stringify(JSON.parse(test)));});
 }
 
 function unittest4() { // Bad JSON
@@ -88,21 +79,15 @@ function unittest4() { // Bad JSON
     '["key_a" : false}',
     '[false : false]',
     '{false : false}',
-    '4 5',
-  ].forEach(function(test){
-    if (sacrifice.validate(test))
-      console.log("ERROR: ", test, sacrifice.validate(test));
-  });
+    '4 7'
+  ].forEach(function(test){if (sacrifice.validate(test)) console.error(test, sacrifice.validate(test));});
 }
 
 function unittest5() { // Good JSON
   [
     '" "',
     '[ 3 ]'
-  ].forEach(function(test){
-    if ( ! sacrifice.validate(test))
-      console.log("ERROR: ", test, sacrifice.validate(test));
-  });
+  ].forEach(function(test){if ( ! sacrifice.validate(test)) console.error(test, sacrifice.validate(test));});
 }
 
 sacrifice.unittests = function() {

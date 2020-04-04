@@ -188,6 +188,9 @@ class Parser extends MyError {
     this.result    = 0;
     this.tokenizer = new Tokenizer(str);
     this.tokenizer.parse();
+
+    //this.tokenizer.debugTokens();
+
     this.tokens    = this.tokenizer.tokens;
   }
 
@@ -225,8 +228,7 @@ class Parser extends MyError {
       if (sacrifice.errors) return this;
 
       if (this.peek(TOKEN_ID_RIGHT_BRACE)) {
-        if (commaOpen)
-          return this.error(`Illegal token`);
+        if (commaOpen) return this.error(`Illegal token`);
         this.step();
         return obj;
       }
@@ -258,6 +260,8 @@ class Parser extends MyError {
       } else {
         obj[key] = this.parseTokens();
       }
+
+      if ( ! (this.peek(TOKEN_ID_RIGHT_BRACE) || this.peek(TOKEN_ID_COMMA))) return this.error(`Illegal token`);
 
       if (this.peek(TOKEN_ID_COMMA)) {
         commaOpen = true;
@@ -292,7 +296,7 @@ class Parser extends MyError {
       } else if (this.peek(TOKEN_ID_FALSE)) {
         array.push(false);
         this.step();
-      }  else if (this.peek(TOKEN_ID_TRUE)) {
+      } else if (this.peek(TOKEN_ID_TRUE)) {
         array.push(true);
         this.step();
       } else if (this.peek(TOKEN_ID_STRING)) {
@@ -308,6 +312,8 @@ class Parser extends MyError {
       } else {
         return this.error(`Illegal token`);
       }
+
+      if ( ! (this.peek(TOKEN_ID_RIGHT_BRACKET) || this.peek(TOKEN_ID_COMMA))) return this.error(`Illegal token`);
 
       if (this.peek(TOKEN_ID_COMMA)) {
         commaOpen = true;

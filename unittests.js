@@ -71,6 +71,8 @@ function unittest3() {
 
 function unittest4() { // Bad JSON
   [
+    '[444,   7    77]',
+    '{"sds": 42 "sds": 42}',
     '[ 3 ] s',
     '[4,3,3,,]',
     '[4,3,3,]',

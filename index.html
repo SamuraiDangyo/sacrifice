@@ -1,14 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- Required meta tags -->
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <meta name="Author" content="Toni Helminen kalleankka1@gmail.com" />
-
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
 
@@ -20,19 +16,20 @@
 <body>
   <div class="container">
 
-    <h2>Try sacrifice</h2>
+    <h1>Try sacrifice</h1>
 
     <form action="#">
       <div class="form-group">
-        <textarea style="font-size:25px;" rows="5" cols="50" name="equation" id="idJsonText"></textarea>
+        <label for="equation">Input</label>
+        <textarea class="form-control" rows="5" name="json" id="idInput" rows="3"></textarea>
       </div>
+
       <input type="submit" value="Validate" onclick="return validateCallback()" />
       <input type="submit" value="Trim" onclick="return trimCallback()" />
     </form>
 
     <div class="p-2"><b class="h2" id="answer"></b></div>
 
-    <!-- Copyright -->
     <div class="footer-copyright text-center py-3">© 2020 Copyright:
       <a href="https://github.com/SamuraiDangyo/">SamuraiDangyo</a>
     </div>
@@ -43,11 +40,22 @@
   let trimCallback     = 0;
 
   (function(){
-  function validJSON()   {$("#answer").removeClass("text-danger").addClass("text-success").html("Valid JSON");}
-  function invalidJSON() {$("#answer").removeClass("text-success").addClass("text-danger").html("Invalid JSON");}
+  function validJSON()   {
+    const elem = document.getElementById("answer");
+    elem.classList.remove("text-danger");
+    elem.classList.add("text-success");
+    elem.innerHTML = "Valid JSON";
+  }
+
+  function invalidJSON() {
+    const elem = document.getElementById("answer");
+    elem.classList.remove("text-success");
+    elem.classList.add("text-danger");
+    elem.innerHTML = "Invalid JSON";
+  }
 
   validateCallback = function() {
-    if (sacrifice.validate($("#idJsonText").val()))
+    if (sacrifice.validate(document.getElementById("idInput").value))
       validJSON();
     else
       invalidJSON();
@@ -55,7 +63,8 @@
   };
 
   trimCallback = function() {
-    const value = $("#idJsonText").val();
+    const elem  = document.getElementById("idInput");
+    const value = elem.value;
 
     if ( ! sacrifice.validate(value)) {
       invalidJSON();
@@ -63,12 +72,12 @@
     }
 
     validJSON();
-    $("#idJsonText").val(sacrifice.trim(value));
+    elem.value = sacrifice.trim(value);
 
     return false;
   };
 
-  sacrifice.unittests();
+  sacrifice.unittests(); // Do unittests anyway
   })();
   </script>
 </body>

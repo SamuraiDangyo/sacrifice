@@ -1,84 +1,62 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-  <meta name="Author" content="Toni Helminen kalleankka1@gmail.com" />
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-
-  <title>Try sacrifice</title>
-
-  <script src="sacrifice.js"></script>
-  <script src="unittests.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta name="Author" content="Toni Helminen kalleankka1@gmail.com" />
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Try sacrifice</title>
+<script src="sacrifice.js"></script>
+<script src="unittests.js"></script>
 </head>
 <body>
-  <div class="container">
 
-    <h1>Try sacrifice</h1>
+<div class="container">
+<h1>Try sacrifice</h1>
+<form action="#">
+<div class="form-group"><label for="equation">Input</label><textarea class="form-control" rows="5" name="json" id="idInput" rows="3"></textarea></div>
+<input type="submit" value="Validate" onclick="return validateCallback()" />
+<input type="submit" value="Trim" onclick="return trimCallback()" />
+</form>
+<div class="p-2"><b class="h2" id="answer"></b></div>
+<div class="footer-copyright text-center py-3">© 2020 Copyright: <a href="https://github.com/SamuraiDangyo/">SamuraiDangyo</a></div>
+</div>
 
-    <form action="#">
-      <div class="form-group">
-        <label for="equation">Input</label>
-        <textarea class="form-control" rows="5" name="json" id="idInput" rows="3"></textarea>
-      </div>
+<script>
+let validateCallback = 0, trimCallback     = 0;
 
-      <input type="submit" value="Validate" onclick="return validateCallback()" />
-      <input type="submit" value="Trim" onclick="return trimCallback()" />
-    </form>
+(function(){
+function validJSON()   {
+  const elem = document.getElementById("answer");
+  elem.classList.remove("text-danger");
+  elem.classList.add("text-success");
+  elem.innerHTML = "Valid JSON";
+}
 
-    <div class="p-2"><b class="h2" id="answer"></b></div>
+function invalidJSON() {
+  const elem = document.getElementById("answer");
+  elem.classList.remove("text-success");
+  elem.classList.add("text-danger");
+  elem.innerHTML = sacrifice.errorMsg;
+}
 
-    <div class="footer-copyright text-center py-3">© 2020 Copyright:
-      <a href="https://github.com/SamuraiDangyo/">SamuraiDangyo</a>
-    </div>
-  </div>
+validateCallback = function() {
+  if (sacrifice.validate(document.getElementById("idInput").value)) validJSON(); else invalidJSON();
+  return false;
+};
 
-  <script>
-  let validateCallback = 0;
-  let trimCallback     = 0;
+trimCallback = function() {
+  const elem = document.getElementById("idInput"), value = elem.value;
+  if (!sacrifice.validate(value)) {invalidJSON(); return false;}
+  validJSON();
+  elem.value = sacrifice.trim(value);
+  return false;
+};
 
-  (function(){
-  function validJSON()   {
-    const elem = document.getElementById("answer");
-    elem.classList.remove("text-danger");
-    elem.classList.add("text-success");
-    elem.innerHTML = "Valid JSON";
-  }
-
-  function invalidJSON() {
-    const elem = document.getElementById("answer");
-    elem.classList.remove("text-success");
-    elem.classList.add("text-danger");
-    elem.innerHTML = "Invalid JSON";
-  }
-
-  validateCallback = function() {
-    if (sacrifice.validate(document.getElementById("idInput").value))
-      validJSON();
-    else
-      invalidJSON();
-    return false;
-  };
-
-  trimCallback = function() {
-    const elem  = document.getElementById("idInput");
-    const value = elem.value;
-
-    if ( ! sacrifice.validate(value)) {
-      invalidJSON();
-      return false;
-    }
-
-    validJSON();
-    elem.value = sacrifice.trim(value);
-
-    return false;
-  };
-
-  sacrifice.unittests(); // Do unittests anyway
-  })();
-  </script>
+sacrifice.unittests(); // Do unittests anyway
+})();
+</script>
 </body>
 </html>
